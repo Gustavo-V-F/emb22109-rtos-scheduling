@@ -1,0 +1,657 @@
+\documentclass[
+	% -- opções da classe memoir --
+	10pt,				% tamanho da fonte
+	openright,			% capítulos começam em pág ímpar (insere página vazia caso preciso)
+	oneside,			% para impressão em recto e verso. Oposto a oneside
+	a4paper,			% tamanho do papel. 
+	% -- opções da classe abntex2 --
+	%chapter=TITLE,		% títulos de capítulos convertidos em letras maiúsculas
+	%section=TITLE,		% títulos de seções convertidos em letras maiúsculas
+	%subsection=TITLE,	% títulos de subseções convertidos em letras maiúsculas
+	%subsubsection=TITLE,% títulos de subsubseções convertidos em letras maiúsculas
+	% -- opções do pacote babel --
+	english,			% idioma adicional para hifenização
+	french,				% idioma adicional para hifenização
+	spanish,			% idioma adicional para hifenização
+	brazil,				% o último idioma é o principal do documento
+	]{abntex2}
+
+
+% ---
+% PACOTES
+% ---
+
+% ---
+% Pacotes fundamentais 
+% ---
+\usepackage{lmodern}			% Usa a fonte Latin Modern
+\usepackage[T1]{fontenc}		% Selecao de codigos de fonte.
+\usepackage[utf8]{inputenc}		% Codificacao do documento (conversão automática dos acentos)
+\usepackage{indentfirst}		% Indenta o primeiro parágrafo de cada seção.
+\usepackage{color}				% Controle das cores
+\usepackage{graphicx}			% Inclusão de gráficos
+\usepackage{microtype} 			% para melhorias de justificação
+% ---
+
+% ---
+% Pacotes adicionais, usados no anexo do modelo de folha de identificação
+% ---
+\usepackage{multicol}
+\usepackage{multirow}
+% ---
+	
+% ---
+% Pacotes adicionais
+% ---
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{sagetex}
+\usepackage{amsmath}
+\usepackage{xcolor, soul}
+% ---
+
+% ---
+% Pacotes de citações
+% ---
+\usepackage[brazilian,hyperpageref]{backref}	 % Paginas com as citações na bibl
+\usepackage[alf, abnt-emphasize=bf]{abntex2cite}	 % Citações padrão ABNT
+
+% --- 
+% CONFIGURAÇÕES DE PACOTES
+% --- 
+
+% ---
+% Configurações do pacote backref
+% Usado sem a opção hyperpageref de backref
+\renewcommand{\backrefpagesname}{Citado na(s) página(s):~}
+% Texto padrão antes do número das páginas
+\renewcommand{\backref}{}
+% Define os textos da citação
+\renewcommand*{\backrefalt}[4]{
+	\ifcase #1 %
+		Nenhuma citação no texto.%
+	\or
+		Citado na página #2.%
+	\else
+		Citado #1 vezes nas páginas #2.%
+	\fi}%
+% ---
+
+% ---
+% Inclusão do caminho das imagens e comandos
+\graphicspath{{PDF/}{imagens/}}
+% ---
+
+% ---
+% Configurações de aparência do PDF final
+
+% alterando o aspecto da cor azul
+\definecolor{blue}{RGB}{41,5,195}
+
+% informações do PDF
+\makeatletter
+\hypersetup{
+     	%pagebackref=true,
+	pdftitle={\@title}, 
+	pdfauthor={\@author},
+    	pdfsubject={\imprimirpreambulo},
+	pdfcreator={LaTeX with abnTeX2},
+	pdfkeywords={exercícios}{lista}, 
+	colorlinks=true,       		% false: boxed links; true: colored links
+    	linkcolor=blue,          	% color of internal links
+    	citecolor=blue,        		% color of links to bibliography
+    	filecolor=magenta,      		% color of file links
+	urlcolor=blue,
+	bookmarksdepth=4
+}
+\makeatother
+% --- 
+
+% --- 
+% Espaçamentos entre linhas e parágrafos 
+% --- 
+
+% O tamanho do parágrafo é dado por:
+\setlength{\parindent}{1.3cm}
+
+% Controle do espaçamento entre um parágrafo e outro:
+\setlength{\parskip}{0.2cm}  % tente também \onelineskip
+
+% Espaçamento apropriado entre cabeçalho e parágrafo:
+\setlength{\headheight}{1.53cm}
+
+% Comando para indicador ordinal com espaçamento apropriado entre o texto:
+\newcommand{\ª}{%
+\textordfeminine
+}
+
+% ---
+% compila o indice
+% ---
+\makeindex
+% ---
+
+% ----
+% Início do documento
+% ----
+\begin{document}
+
+% Seleciona o idioma do documento (conforme pacotes do babel)
+%\selectlanguage{english}
+\selectlanguage{brazil}
+
+% Retira espaço extra obsoleto entre as frases.
+\frenchspacing 
+
+% ----------------------------------------------------------
+% ELEMENTOS TEXTUAIS
+% ----------------------------------------------------------
+\textual
+
+% ----------------------------------------------------------
+% Cabeçalho
+% ----------------------------------------------------------
+
+\pagestyle{fancy}
+\fancyhf{}
+\chead{\begin{minipage}{0.47\textwidth}\centering
+	\includegraphics[width=0.8\textwidth]{florianopolis_horizontal_marca2015.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{0.47\textwidth}\centering
+	\includegraphics[width=1.2\textwidth]{daeln_horizontal_3_linhas.pdf}
+\end{minipage}}
+
+\noindent
+Unidade Curricular: Sistemas Embarcados (EMB22109).\\
+Professor: Hugo Marcondes.\\
+Aluno: Gustavo Vianna França. \\
+Florianópolis, \today.
+
+\center{
+	Resolução da Lista de Exercícios - Escalonamento em Tempo Real
+}
+
+\begin{sagesilent}
+def dotcommaswap(number, decimals):
+    return str(round(float(number), ndigits=decimals)).replace(',',' ').replace('.',',').replace(' ','.');
+
+def includesagegraphics(filename, options=r"width=1\textwidth"):
+    return r"\includegraphics[" + options + r"]{" + filename + r"}" + "\n";
+
+def task_table(tasks):
+    # start of the table
+    s  = [r"\begin{tabular}{|c|c|c|c|}"];
+    s.append(r"\cline{2-4}");
+    s.append(r"\multicolumn{1}{c|}{} & \multicolumn{1}{c|}{\textbf{C}} & \textbf{P} & \textbf{D} \\ \hline" + "\n");
+    for task in tasks:
+        s.append(' & '.join([str(task[0]), str(task[1]), str(task[2]), str(task[3]) + r" \\"]));
+        if task == tasks[-1]:
+            s.append(r" \hline" + "\n");
+        else:
+            s.append(r" \cline{1-4}" + "\n");
+            
+    s.append(r"\end{tabular}");
+    return "".join(s);
+
+def task_utilization_table(tasks):
+    # variable declaration
+    U = 0;
+    # start of the table
+    s  = [r"\begin{tabular}{|c|c|}"];
+    s.append(r"\cline{2-2}");
+    s.append(r"\multicolumn{1}{c|}{} & \multicolumn{1}{c|}{\textbf{U}} \\ \hline" + "\n");
+    for task in tasks:
+        U += task[1]/task[2];
+        s.append(' & '.join([str(task[0]), dotcommaswap(100*task[1]/task[2], 2) + r"\percent \\"]));
+        s.append(r" \cline{1-2}" + "\n");
+
+    s.append(r"Total & " + dotcommaswap(100*U, 2) + r"\percent \\");
+    s.append(r" \hline" + "\n");
+    s.append(r"\end{tabular}");
+    return "".join(s);
+
+import copy
+def task_wrt_table(tasks, algorithm='RM', preemptive=True, symbol='r'):
+    # variable declaration
+    task_name, wrt = task_wrt(tasks, algorithm=algorithm, preemptive=preemptive);
+    # start of the table
+    s  = [r"\begin{tabular}{|c|c|}"];
+    s.append(r"\cline{2-2}");
+    s.append(r"\multicolumn{1}{c|}{} & \multicolumn{1}{c|}{$\mathrm{" + str(symbol) + r"_{i}}$} \\ \hline" + "\n");
+    for i, task in enumerate(tasks):
+        s.append(' & '.join([str(task_name[i]), str(wrt[i]) + r" \\"]));
+        if task == tasks[-1]:
+            s.append(r" \hline" + "\n");
+        else:
+            s.append(r" \cline{1-2}" + "\n");
+            
+    s.append(r"\end{tabular}");
+    return "".join(s);
+
+def task_wrt(tasks, algorithm='RM', preemptive=True):
+    maxlpdec = 0;
+    Li = [];
+    L = [];
+    Q = [];
+    wi = [];
+    r = [];
+    ri = [];
+    task_set = copy.deepcopy(tasks);
+    
+    for i, task in enumerate(task_set):
+        while len(task) < 6:
+            task.append(0);
+    
+    if algorithm.replace(' ','').upper()=='RATEMONOTONIC' or algorithm.replace(' ','').upper()=='RM':
+        task_set.sort(key=lambda x:(x[1], x[3]));
+    elif algorithm.replace(' ','').upper()=='DEADLINEMONOTONIC' or algorithm.replace(' ','').upper()=='DM':
+        task_set.sort(key=lambda x:(x[3], x[1]));
+            
+    for i, task in enumerate(task_set):
+        if (len(task) < 7):
+            task.append(i+1);
+        else:
+            task[6] = i+1;
+
+    if preemptive:
+        for i, task in enumerate(task_set):
+            wi.append(task[1] + task[4]);
+            if r:
+                j = 1;
+                while True:
+                    wi.append(task[1] + task[4] + sum(ceil((task_set[k][5] + wi[j-1])/task_set[k][2])*task_set[k][1] for k in range(0, i)));
+                    if wi[-1] == wi[-2]:
+                        break;
+                    else:
+                        j += 1;
+            r.append(wi[-1] + task[5]);
+            wi.clear();
+    else:
+        for i, task in enumerate(task_set):
+            maxlpdec = 0;
+            if len(L)+1 != len(task_set):
+                maxlpdec = max([t[1]-1 for t in task_set[i+1:len(task_set)]]);
+
+            Li.append(maxlpdec);
+            if L:
+                j = 1;
+                while True:
+                    Li.append(maxlpdec + sum(ceil(Li[j-1]/task_set[k][2])*task_set[k][1] for k in range(0, i+1)));
+                    j += 1;
+                    if Li[-1] == Li[-2]:
+                        break;
+            L.append(Li[-1]);
+            Li.clear();
+
+        Q = [floor(L[i]/task[2]) for i, task in enumerate(task_set)];
+        for i, task in enumerate(task_set):
+            for q in range(Q[i]+1):
+                maxlpdec = 0;
+                if len(r)+1 != len(task_set):
+                    maxlpdec = max([t[1]-1 for t in task_set[i+1:len(task_set)]]);
+
+                wi.append(q*task[1] + maxlpdec);
+                if r:
+                    j = 1;
+                    while True:
+                        wi.append(q*task[1] + maxlpdec + sum((1 + floor(wi[j-1]/task_set[k][2]))*task_set[k][1] for k in range(0, i)));
+                        j += 1;
+                        if wi[-1] == wi[-2]:
+                            break;
+
+                ri.append(wi[-1] + task[1] - q*task[2]);
+                wi.clear();
+
+            r.append(max(ri));
+            ri.clear();
+            
+    return [task[0] for task in task_set], r;
+
+import os
+import time
+import copy
+import plotly
+import plotly.figure_factory as ff
+import pandas as pd
+from parse import compile
+import cairosvg
+
+def clamp(x): 
+    return max(0, min(x, 255));
+
+def uniquify(path):
+    filename, extension = os.path.splitext(path);
+    counter = 1;
+
+    while os.path.exists(path):
+        path = filename + "(" + str(counter) + ")" + extension;
+        counter += 1;
+
+    return path;
+
+def read_timescale(filename, colors, output_file, output_directory = './imagens', opacity=0.6, title='Timescale (cyclic executive) for the task set', timeline_name='Timeline'):
+    task_timescale = pd.read_csv(filename, index_col=0, delimiter=';');
+    task_set = [];
+    task_timeline = [];
+    rgb = compile("rgb({}, {}, {})");
+    dload = os.path.expanduser('~/Downloads');
+    
+    for delta in task_timescale.axes[1]:
+        for task in task_timescale.axes[0]:
+            if str(task_timescale.at[task, delta]).upper() == 'X':
+                task_set.append([task, *delta.split('-'), task]);
+                task_timeline.append([timeline_name, *delta.split('-'), task + '_' + timeline_name.replace(' ', '_')]);
+
+    df = pd.DataFrame(task_set, columns=['Task', 'Start', 'Finish', 'Color']);
+    df = df.sort_values('Task');
+    timeline_df = pd.DataFrame(task_timeline, columns=['Task', 'Start', 'Finish', 'Color']);
+    df = df.append(timeline_df, ignore_index = True);
+
+    timestep = int(task_timescale.axes[1][0].split('-')[1]);
+
+    colors_new = copy.deepcopy(colors);
+
+    for key in colors:
+        r,g,b = rgb.parse(colors[key]);
+        color = [clamp(int(r)), clamp(int(g)), clamp(int(b))];
+        color_idx = color.index(max(color));
+        if color[color_idx] == 255:
+            color[color_idx] = 254;
+        else:
+            color[color_idx] += 1;
+            
+        colors_new[key + '_' + timeline_name.replace(' ', '_')] = "rgb({}, {}, {})".format(color[0], color[1], color[2]);
+    
+    fig = ff.create_gantt(df, colors=colors_new, index_col='Color', title=title, bar_width=0.4r, group_tasks=True, showgrid_x=True, showgrid_y=True);
+    fig.update_layout(xaxis_type='linear');
+    fig.update_xaxes(range=[int(task_timescale.axes[1][0].split('-')[0])-int(timestep)/2, int(task_timescale.axes[1][-1].split('-')[1])+int(timestep)/2], dtick=timestep, gridwidth=1, gridcolor='Grey');
+    fig.update_yaxes(gridwidth=2, gridcolor='Grey');
+    fig.add_vline(x=task_timescale.axes[1][0].split('-')[0]);fig.add_vline(x=int(task_timescale.axes[1][-1].split('-')[1]));
+    fig.for_each_trace(
+        lambda trace: trace.update(opacity=opacity) if timeline_name.replace(' ', '_') in trace.name else (),
+    );
+
+    if os.path.exists(dload + '/' + output_file + ".svg"):
+        file_path = uniquify(dload + '/' + output_file + ".svg");
+    else:
+        file_path = dload + '/' + output_file + ".svg";
+
+    plotly.offline.plot(fig, filename=os.path.expanduser('/tmp') + '/temp-plot.html', image_filename=output_file, image='svg', auto_open=True, validate=False);
+
+    while not os.path.exists(file_path):
+        time.sleep(1);
+
+    time.sleep(1);
+
+    cairosvg.svg2pdf(url=os.path.realpath(file_path), write_to=os.path.realpath('{}/{}.pdf'.format(output_directory, output_file)));
+
+    return;
+\end{sagesilent}
+
+\begin{enumerate}
+\item Considerando o conjunto de tarefas abaixo, realize o cálculo de utilização do conjunto de tarefas, e
+tente criar uma escala de tempo (executivo cíclico) para atender os deadlines solicitados. O conjunto
+de tarefas é escalonável por \textit{Rate Monotonic}, com preempção e sem preempção?
+
+\begin{sagesilent}
+tasks1 = [['T1', 1, 5, 5], ['T2', 2, 6, 6], ['T3', 2, 10, 10], ['T4', 3, 15, 15]];
+colors1 = {'T1': 'rgb(0, 0, 255)',
+          'T2': 'rgb(255, 0, 0)',
+          'T3': 'rgb(0, 255, 255)',
+          'T4': 'rgb(255, 100, 0)'}
+read_timescale('./planilhas/1.csv', colors1, 'tasks1', title='Escala de tempo (executivo cíclico) para o conjunto de tarefas do item 1', timeline_name='Grade');
+\end{sagesilent}
+
+\begin{center}
+	\sagestr{task_table(tasks1)}
+\end{center}
+\textbf{R}: Inicialmente, a escala de tempo é realizada abaixo, que não necessita de preempção e cumpre todos os \textit{deadlines}.
+\begin{center}
+	\sagestr{includesagegraphics('tasks1.pdf', r'width=0.9\textwidth')}
+\end{center}
+
+\begin{sagesilent}
+U_1 = [i[1]/i[2] for i in tasks1];
+\end{sagesilent}
+
+Em seguida para a análise de escalonabilidade por \textit{Rate Monotonic}, como descrito por \citeonline[p. 5]{liu1973}, a utilização do conjunto de tarefas é dada pela soma da utilização do tempo de processamento de cada uma, de acordo com a equação abaixo:
+\begin{equation} \label{eq_1}
+	\mathbf{U} = \sum_{\mathrm{i} = 1}^{\mathrm{N}}{\mathbf{U}_{\mathrm{i}}} = \sum_{\mathrm{i} = 1}^{\mathrm{N}}{\frac{\mathbf{C}_{\mathrm{i}}}{\mathbf{P}_{\mathrm{i}}}}
+\end{equation}
+Onde $\mathbf{C}_{\mathrm{i}}$, $\mathbf{P}_{\mathrm{i}}$, $\mathbf{U}_{\mathrm{i}}$ e N são respectivamente a computação necessária, o período, a utilização de processamento de cada tarefa e o número total de tarefas e $\mathbf{U}$ é a utilização total de processamento das tarefas. Na tabela abaixo estão os valores percentuais de utilização de cada tarefa e do total:
+\begin{center}
+	\sagestr{task_utilization_table(tasks1)}
+\end{center}
+Assim, segundo \citeonline[p. 8]{liu1973}, um teste suficiente para averiguar a escalonabilidade do conjunto é apresentado a seguir:
+\begin{equation} \label{eq_2}
+	\sum_{\mathrm{i} = 1}^{\mathrm{N}}{\frac{\mathbf{C}_{\mathrm{i}}}{\mathbf{P}_{\mathrm{i}}}} \le \mathrm{N} \left( 2^{\frac{1}{\mathrm{N}}} - 1 \right)
+\end{equation}
+Onde no conjunto atual de 4 tarefas tem um resultado de \sagestr{dotcommaswap(len(tasks1)*(2**(1/len(tasks1)) - 1), 4)}, que é menor do que o valor de \sagestr{dotcommaswap(sum(U_1), 4)}, portanto não é possível garantir que ele seja escalonável. Desse modo, faz-se necessário a examinação dos piores cenários possíveis para a avaliar seus testes exatos.
+
+Primeiramente é verificado o cenário preemptivo. Assim, por meio das equações abaixo \cite[p. 3]{tindell1994} são calculados os piores tempos de resposta do conjunto de tarefas, e caso eles ultrapassem os seus respectivos \textit{deadlines}, o conjunto não é escalonável.
+\begin{align}
+	\mathrm{r_{i}} &= \mathbf{J}_{\mathrm{i}} + \mathrm{w_{i}} \label{eq_3} \\
+	\text{Onde:} & \nonumber \\
+	\mathrm{w_{i}} &= \mathbf{C}_{\mathrm{i}} + \mathbf{B}_{\mathrm{i}} + \sum_{\forall \mathrm{j} \in \mathrm{hp(i)}}{\left\lceil \frac{\mathbf{J}_{\mathrm{j}} + \mathrm{w_{i}}}{\mathbf{P}_{\mathrm{j}}} \right\rceil \mathbf{C}_{\mathrm{j}}} \label{eq_4}
+\end{align}
+Onde $\mathbf{B}_{\mathrm{i}}$, $\mathbf{J}$ e $\mathrm{hp(i)}$ são, nessa ordem, o tempo de bloqueio que a tarefa i é bloqueada por uma tarefa de menor prioridade, o \textit{release jitter} que é o atraso na liberação de uma tarefa e o último é a lista de tarefas de maior prioridade que a atual. Com isso se tem o pior tempo de resposta das tarefas, $\mathrm{r_{i}}$, observado na tabela a seguir:
+\begin{center}
+	\sagestr{task_wrt_table(tasks1)}
+\end{center}
+Observa-se que a tarefa T4 possui um pior tempo de resposta maior que seu \textit{deadline}, logo o conjunto não é escalonável.
+
+Depois é considerado o cenário não preemptivo, que possui o mesmo resultado do teste suficiente para o caso preemptivo. Porém o seu pior tempo de resposta deve levar em conta as seguintes equações \cite[p. 29, 36 e 42]{laurent1996}:
+\begin{align}
+	\mathbf{L}_{\mathrm{i}} &= max_{\mathrm{j} \in \mathrm{lp(i)}} \left\{ \mathbf{C}_{\mathrm{j}} - 1 \right\} + \sum_{\mathrm{j} \in \mathrm{hp(i)} \cup \left\{ \mathrm{i} \right\} }{ \left\lceil \frac{\mathbf{L}_{\mathrm{i}}}{\mathbf{P}_{\mathrm{j}}} \right\rceil \mathbf{C}_{\mathrm{j}}} \label{eq_5} \\
+	\mathrm{r_{i}} &= max_{\mathrm{q} = 0, ..., \mathbf{Q}} \left\{ \mathrm{w_{i,q}} + \mathbf{C}_{\mathrm{i}} - \mathrm{q} \mathbf{P}_{\mathrm{i}} \right\} \label{eq_6} \\ 
+	\text{Onde:} & \nonumber \\
+	\mathrm{w_{i,q}} &= \mathrm{q} \mathbf{C}_{\mathrm{i}}+ \sum_{\mathrm{j} \in \mathrm{hp(i)} }{ \left( 1 + \left\lfloor \frac{\mathrm{w_{i,q}}}{\mathbf{P}_{\mathrm{j}}} \right\rfloor \right) \mathbf{C}_{\mathrm{j}}} + max_{\mathrm{k} \in \mathrm{lp(i)}} \left\{ \mathbf{C}_{\mathrm{k}} - 1 \right\} \label{eq_7} \\ 
+	\mathbf{Q} &= \left\lfloor \frac{\mathbf{L}_{\mathrm{i}}}{\mathbf{P}_{\mathrm{i}}} \right\rfloor \label{eq_8}
+\end{align}
+Onde $\mathbf{L}_{\mathrm{i}}$, $\mathrm{w_{i,q}}$, $\mathrm{q}$, $\mathbf{Q}$ e $\mathrm{lp(i)}$ são, de modo respectivo, o período de tempo de ocupação do processador por tarefas com maior ou mesma prioridade que a atual, o pior tempo de resposta da tarefa atual de determinada instância, as instâncias da tarefa atual, o número máximo de instâncias da tarefa atual e a lista de tarefas com prioridade menor que a atual. A partir dessas equações são obtidos os piores tempos de resposta possíveis para o conjunto, $\mathrm{r_{i}}$, no que seus valores estão dispostos na tabela abaixo:
+\begin{center}
+	\sagestr{task_wrt_table(tasks1, preemptive=False)}
+\end{center}
+Vê-se que nenhum pior tempo de resposta ultrapassa os \textit{deadlines} de cada tarefa, consequentemente o conjunto é escalonável por \textit{Rate Monotonic} sem preempção.
+
+\item Considerando o conjunto de tarefas abaixo, tente criar uma escala de tempo (executivo cíclico) para
+atender os deadlines solicitados.
+
+\begin{sagesilent}
+tasks2 = [['T1', 3, 10, 10], ['T2', 3, 15, 15], ['T3', 15, 30, 30]];
+colors2 = {'T1': 'rgb(0, 0, 255)',
+                  'T2': 'rgb(255, 0, 0)',
+                  'T3': 'rgb(0, 255, 255)'}
+read_timescale('./planilhas/2.csv', colors2, 'tasks2', title='Escala de tempo (executivo cíclico) para o conjunto de tarefas do item 2', timeline_name='Grade');
+\end{sagesilent}
+
+\begin{center}
+	\sagestr{task_table(tasks2)}
+\end{center}
+\textbf{R}: A escala de tempo requisitada é apresentada em sequência:
+\begin{center}
+	\sagestr{ includesagegraphics('tasks2.pdf', r'width=0.9\textwidth')}
+\end{center}
+Nota-se que todos os \textit{deadlines} foram obedecidos, porém é necessário o uso de preempção.
+
+\item Em relação a escalonabilidade do conjunto de tarefas do exercício 2, pode-se dizer que:
+	\begin{enumerate}[label=\alph*)]
+		\item É impossível.
+		\item \hl{É possível, desde que algumas preempções sejam permitidas.}
+		\item É possível, desde que nenhuma preempção seja permitida.
+		\item É possível, dado que os períodos são múltiplos entre si.
+	\end{enumerate}
+
+\textbf{R}: O item b) é a resposta por ser necessário preempções sobre a 3\ª{} tarefa e pelo fato de que nem todos os períodos são múltiplos entre si, e.g. as 1\ª{} e 2\ª{} tarefas. 
+	
+\item No que diz respeito ao escalonamento de sistemas de tempo real, cite uma vantagem e uma desvantagem 
+do executivo cíclico sobre o escalonamento com prioridades e teste de escalonabilidade.
+
+\textbf{R}: Uma vantagem do escalonamento executivo cíclico sobre o escalonamento com prioridades e teste de escalonabilidade é o conhecimento de toda a escala de execução proporcionando determinismo.
+E uma desvantagem deste é a complexidade encontrada para escalonar estruturas e sistemas compostos de várias tarefas.
+
+\item A tabela abaixo descreve um sistema a ser escalonado por um executivo cíclico.
+
+\begin{sagesilent}
+tasks5 = [['A', 1, 5, 5], ['B', 3, 8, 8], ['C', 6, 20, 20]];
+colors5 = {'A': 'rgb(0, 0, 255)',
+                  'B': 'rgb(255, 0, 0)',
+                  'C': 'rgb(0, 255, 255)'}
+read_timescale('./planilhas/5-a.csv', colors5, 'tasks5-a', title='Escala de tempo (executivo cíclico) para o conjunto de tarefas do item 5.a)', timeline_name='Grade');
+read_timescale('./planilhas/5-b.csv', colors5, 'tasks5-b', title='Escala de tempo (EDF preemptivo) para o conjunto de tarefas do item 5.b)', timeline_name='Grade');
+\end{sagesilent}
+
+\begin{center}
+	\sagestr{task_table(tasks5)}
+\end{center}
+
+	\begin{enumerate}[label=\alph*)]
+		\item É possível resolver com uma grade de tempo não preemptiva? Justifique.
+			
+		\textbf{R}: É factível que a grade possa ser não preemptiva, segue um exemplo na escala de tempo abaixo:
+		\begin{center}
+			\sagestr{ includesagegraphics('tasks5-a.pdf', r'width=0.9\textwidth')}
+		\end{center}
+		\item Construa uma grade de tempo que na verdade implementa um escalonamento EDF preemptivo.
+		
+		\textbf{R}: Prossegue-se à tabela com o cumprimento dos critérios de escalonamento por EDF preemptivo:
+		\begin{center}
+			\sagestr{ includesagegraphics('tasks5-b.pdf', r'width=0.9\textwidth')}
+		\end{center}
+		\item Caso a tarefa A seja esporádica, ainda assim é possível escalonar este sistema? Justifique a sua
+resposta.
+
+		\textbf{R}: Quando a tarefa A é esporádica o pior cenário levantado é do seu intervalo mínimo entre ativações, fazendo com que possa ser considerada periódica. 
+		Logo, se a preempção for permitida, o teste exato para o escalonamento por EDF é válido, o qual é \cite[p. 8]{laurent1996}:
+		\begin{equation} \label{eq_9}
+			\sum_{\mathrm{i} = 1}^{\mathrm{N}}{\frac{\mathbf{C}_{\mathrm{i}}}{\mathbf{P}_{\mathrm{i}}}} \le 1
+		\end{equation}
+		\begin{sagesilent}
+		U_5 = [i[1]/i[2] for i in tasks5];
+		\end{sagesilent}
+		Nisso o total de utilização de processamento é obtido a partir da tabela abaixo, no que seu valor é de \sagestr{dotcommaswap(sum(U_5), 4)}, que é menor que 1, o 
+		que indica a sua escalonabilidade.
+		\begin{center}
+			\sagestr{task_utilization_table(tasks5)}
+		\end{center}
+	\end{enumerate}
+
+\item Considerando o conjunto de tarefas abaixo, tente criar uma escala de tempo (executivo cíclico) para
+atender os deadlines solicitados. As tarefas T1 e T2 compartilham uma mesma tabela, enquanto as
+tarefas T3 e T4 compartilham uma mesma lista encadeada. Procure minimizar os \textit{overheads}.
+
+\begin{sagesilent}
+tasks6 = [['T1', 2, 8, 8], ['T2', 8, 16, 16], ['T3', 4, 24, 24], ['T4', 4, 48, 48]];
+read_timescale('./planilhas/6.csv', colors1, 'tasks6', title='Escala de tempo (executivo cíclico) para o conjunto de tarefas do item 6', timeline_name='Grade');
+\end{sagesilent}
+
+\begin{center}
+	\sagestr{task_table(tasks6)}
+\end{center}
+\textbf{R}: Dá-se continuidade à grade de tempo por meio de um escalonamento não preemptivo visando diminuir os \textit{overheads}.
+\begin{center}
+	\sagestr{ includesagegraphics('tasks6.pdf', r'width=0.9\textwidth')}
+\end{center}
+
+\item Considerando o conjunto de tarefas abaixo, tente criar uma escala de tempo (executivo cíclico) para
+atender os deadlines solicitados. As tarefas T1 e T2 compartilham a mesma estrutura de dados.
+
+\begin{sagesilent}
+tasks7 = [['T1', 2, 6, 6], ['T2', 4, 8, 8], ['T3', 2, 12, 12]];
+read_timescale('./planilhas/7.csv', colors2, 'tasks7', title='Escala de tempo (executivo cíclico) para o conjunto de tarefas do item 7', timeline_name='Grade');
+\end{sagesilent}
+
+\begin{center}
+	\sagestr{task_table(tasks7)}
+\end{center}
+\textbf{R}: Apresenta-se abaixo a tabela com um escalonamento não preemptivo:
+\begin{center}
+	\sagestr{ includesagegraphics('tasks7.pdf', r'width=0.9\textwidth')}
+\end{center}
+
+\item Considerando a tabela abaixo, usando a política de atribuição de prioridades \textit{Deadline Monotonic}:
+
+\begin{sagesilent}
+tasks8 = [['A', 4, 20, 10, 2, 1], ['B', 3, 30, 15, 2, 1], ['C', 11, 40, 30, 0, 1]];
+U_8 = [task[1]/task[3] for task in tasks8];
+\end{sagesilent}
+
+\begin{center}
+	\sagestr{task_table(tasks8)}
+\end{center}
+
+Calcule os tempos de resposta e mostre a escalonabilidade (ou não escalonabilidade) desse conjunto
+de tarefas. Interrupções podem ficar desabilitadas por no máximo 1 u.t. e as tarefas A e B compartilham
+ uma estrutura de dados protegida por mutex cuja seção crítica demora 2 u.t. para ser executada.
+
+\textbf{R}: Toma-se conhecimento que o teste suficiente de escalonabilidade do \textit{Deadline Monotonic} é similar ao do \textit{Rate Monotonic} mostrado na \autoref{eq_2}. 
+No entanto, quando os \textit{deadlines} são menores que os períodos ela é modificada para:
+\begin{equation} \label{eq_10}
+	\sum_{\mathrm{i} = 1}^{\mathrm{N}}{\frac{\mathbf{C}_{\mathrm{i}}}{\mathbf{D}_{\mathrm{i}}}} \le \mathrm{N} \left( 2^{\frac{1}{\mathrm{N}}} - 1 \right)
+\end{equation}
+Visto que na tabela em sequência o valor total do fator de utilização do processador é \sagestr{dotcommaswap(sum(U_8), 4)}, um valor maior que 
+\sagestr{dotcommaswap(len(tasks8)*(2**(1/len(tasks8)) - 1), 4)}, não se pode afirmar que o conjunto é escalonável.
+
+Em virtude disso, faz-se necessária a análise do tempo de resposta. Desse modo são calculados os piores tempos de resposta para o caso preemptivo, 
+que utilizam a \autoref{eq_3} e a \autoref{eq_4} considerando o \textit{release jitter} como o tempo máximo em que as interrupções são desabilitadas e 
+o tempo de bloqueio como a demora da secção crítica para as duas primeiras tarefas. Ao final os seus resultados estão dispostos na tabela abaixo:
+\begin{center}
+	\sagestr{task_wrt_table(tasks8, algorithm='DM')}
+\end{center}
+Observa-se que os tempos são todos menores que os \textit{deadlines} das suas respectivas tarefas, e portanto é escalonável. Já para o cenário não preemptivo 
+utilizam-se a \autoref{eq_5}, a \autoref{eq_6}, a \autoref{eq_7} e a \autoref{eq_8}. Seus piores tempos estão delineados na tabela abaixo:
+\begin{center}
+	\sagestr{task_wrt_table(tasks8, algorithm='DM', preemptive=False)}
+\end{center}
+Com isso, verificam-se que as duas primeiras tarefas ultrapassam os seus respectivos \textit{deadlines}, logo elas não são escalonáveis por \textit{Deadline Monotonic} não preemptivo.
+
+\item Considerando a tabela abaixo, usando a política de atribuição de prioridades \textit{Deadline Monotonic}:
+
+\begin{sagesilent}
+tasks9 = [['T0', 1, 10, 3, 0, 2], ['T1', 2, 10, 10, 0, 2], ['T2', 3, 30, 30, 3, 2], ['T3', 9, 40, 30, 3, 2]];
+U_9 = [task[1]/task[3] for task in tasks9];
+\end{sagesilent}
+
+\begin{center}
+	\sagestr{task_table(tasks9[1:])}
+\end{center}
+
+Calcule os tempos de resposta e mostre a escalonabilidade (ou não escalonabilidade) desse conjunto
+ de tarefas. Interrupções podem ficar desabilitadas por no máximo 2 u.t. e as tarefas T2 e T3
+compartilham uma estrutura de dados protegida por mutex cuja seção crítica demora 3 u.t. para
+ser executada. A T1 é esporádica. Interrupções do \textit{timer} acontecem a cada 10 u.t. para ativar um
+tratador que demora no máximo 1 u.t. para executar.
+
+\textbf{R}: De forma similar à questão anterior, é realizado o teste suficiente, porém incluindo uma tarefa adicional, T0, de período de 10 u.t., \textit{deadline} de 3 u.t. (devido ao \textit{release jitter}) e 
+tempo de computação igual a 1 u.t., com o intuito de representar o tratador de interrupções do \textit{timer}. Também como discutido em uma questão prévia, o pior tempo de resposta
+para uma tarefa esporádica, no caso T1, é a situação em que ela ocorre periodicamente. 
+
+Além disso, o valor de comparação do seu teste é modificado para 1, como na \autoref{eq_9}, devido ao fato de que o conjunto possui apenas períodos múltiplos entre si (conjunto de tarefas harmônicas). Essas 
+contribuições resultam em um valor de utilização de processamento total de \sagestr{dotcommaswap(sum(U_9), 4)}, que é menor do que 1, e por consequência o conjunto é escalonável.
+
+E os tempos de resposta para essa política no caso preemptivo estão na tabela abaixo:
+\begin{center}
+	\sagestr{task_wrt_table(tasks9, algorithm='DM')}
+\end{center}
+Denota-se que nenhuma tarefa ultrapassou o seu respectivo \textit{deadline}, fazendo com o que o conjunto seja escalonável com preempção. 
+E por fim, os piores tempos de resposta sem preempção estão localizados na tabela abaixo:
+\begin{center}
+	\sagestr{task_wrt_table(tasks9, algorithm='DM', preemptive=False)}
+\end{center}
+O atraso do tratador de interrupções do \textit{timer} não é atendido e nem o \textit{deadline} da tarefa T1, o que torna o conjunto não escalonável por \textit{Deadline Monotonic} sem preempção.
+
+\end{enumerate}
+
+% ----------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ----------------------------------------------------------
+\postextual
+
+% ----------------------------------------------------------
+% Referências bibliográficas
+% ----------------------------------------------------------
+\bibliography{referencias}
+
+\end{document}
