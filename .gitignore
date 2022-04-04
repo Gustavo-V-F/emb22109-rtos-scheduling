@@ -1,0 +1,7 @@
+DOCS/
+*.ipynb
+*.sagetex.*
+*.log
+*.aux
+*.idx
+*.synctex.*
